@@ -1,0 +1,78 @@
+services:
+
+  kafka:
+    image: apache/kafka:4.2.0
+    container_name: libmanager-kafka
+    ports:
+      - "9092:9092"
+    
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  postgres-member:
+    image: postgres:17
+    container_name: libmanager-postgres-member
+    ports:
+      - "5001:5432"
+    environment:
+      POSTGRES_DB: member_db
+      POSTGRES_USER: ${MEMBER_DB_USER}
+      POSTGRES_PASSWORD: ${MEMBER_DB_PASSWORD}
+    volumes:
+      - postgres_member_data:/var/lib/postgresql/data
+
+  postgres-book:
+    image: postgres:17
+    container_name: libmanager-postgres-book
+    ports:
+      - "5002:5432"
+    environment:
+      POSTGRES_DB: book_db
+      POSTGRES_USER: ${BOOK_DB_USER}
+      POSTGRES_PASSWORD: ${BOOK_DB_PASSWORD}
+    volumes:
+      - postgres_book_data:/var/lib/postgresql/data
+
+  postgres-loan:
+    image: postgres:17
+    container_name: libmanager-postgres-loan
+    ports:
+      - "5003:5432"
+    environment:
+      POSTGRES_DB: loan_db
+      POSTGRES_USER: ${LOAN_DB_USER}
+      POSTGRES_PASSWORD: ${LOAN_DB_PASSWORD}
+    volumes:
+      - postgres_loan_data:/var/lib/postgresql/data
+
+  postgres-payment:
+    image: postgres:17
+    container_name: libmanager-postgres-payment
+    ports:
+      - "5004:5432"
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: ${PAYMENT_DB_USER}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD}
+    volumes:
+      - postgres_payment_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_member_data:
+  postgres_book_data:
+  postgres_loan_data:
+  postgres_payment_data:
